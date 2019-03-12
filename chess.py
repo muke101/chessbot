@@ -22,13 +22,13 @@ checkMate = False
 print(''.join(np.insert(board, [i*10 for i in range(1,10)], '\n')), '\n')
 move = input('Enter move: ')
 start, end = move.split(' ')
-yStart = int(start[1])-1
-xStart = ord(start[0]) - 97 #a's ascii code is 97
-yEnd = int(end[1])-1
-xEnd = ord(end[0]) - 97
+
+yStart = 9-(int(start[1])-1) #9 minus position as chess is decending while the matrix is increasing
+xStart = ord(start[0]) - 96 #a's ascii code is 97(+1 for indexing)
+yEnd = 9-(int(end[1])-1) #minus 1 as chess isn't 0 indexed
+xEnd = ord(end[0]) - 96
+
 board[yEnd][xEnd] = board[yStart][xStart]
-print(board[yStart][xStart])
 board[yStart][xStart] = [' - ' if (xStart+yStart+1)%2 == 0 else ' x '][0]
-print([' - ' if (xStart+yStart+1)%2 == 0 else ' x '][0])
 print(''.join(np.insert(board, [i*10 for i in range(1,10)], '\n')), '\n')
 
