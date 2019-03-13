@@ -93,17 +93,17 @@ class game():
 
 	def move(self): 
 		while True:
-			move = input('Enter move: ')
+			move = input('Enter move: ') #TODO: make sure input in constrained to grid (a-h, 1-8)
 			start, end = move.split(' ')
 
-			yStart = 9-(int(start[1])-1) #9 minus value as chess is decending while the matrix is increasing, minus 1 as chess isn't 0 indexed
-			xStart = (ord(start[0]) - 97)+1 #a's ascii code is 97(+1 for indexing)
-			yEnd = 9-(int(end[1])-1)
-			xEnd = (ord(end[0]) - 97)+1
-
-			if self.ruleCheck(yStart, xStart, yEnd, xEnd):
+			yStart = 9-(int(start[1])) #9 minus value as chess is decending while the matrix is increasing
+			xStart = (ord(start[0]) - 97)+2 #a's ascii code is 97 (+2 for indexing)
+			yEnd = 9-(int(end[1]))
+			xEnd = (ord(end[0]) - 97)+2
+			#self.ruleCheck(yStart, xStart, yEnd, xEnd)
+			if True:
 				self.board[yEnd][xEnd] = self.board[yStart][xStart]
-				self.board[yStart][xStart] = [' - ' if (xStart+yStart+1)%2 == 0 else ' x '][0]
+				self.board[yStart][xStart] = [' - ' if (xStart+yStart+2)%2 == 0 else ' x '][0]
 				break
 			else:
 				print("illegal move")
