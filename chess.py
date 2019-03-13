@@ -24,9 +24,9 @@ class game():
 					board[y][x] = [' - ' if (x+y+1)%2 == 0 else ' x '][0] #- is white space, x is black
 		
 		peices = [[' ♖ ',' ♘ ',' ♗ ',' ♕ ',' ♔ ',' ♗ ',' ♘ ',' ♖ '],[' ♜ ',' ♞ ',' ♝ ',' ♛ ',' ♚ ',' ♝ ',' ♞ ',' ♜ ']]
-		for y in [1,-2]:
+		for c,y in enumerate([1,-2]):
 			for x in range(1,9):
-				board[y][x] = peices[y-1][x-1]
+				board[y][x] = peices[c][x-1]
 				
 		board[2][[i for i in range(1,9)]] = ' ♙ '
 		board[-3][[i for i in range(1,9)]] = ' ♟ '
@@ -37,29 +37,42 @@ class game():
 		print(''.join(np.insert(self.board, [i*10 for i in range(1,12)], '\n')), '\n')
 
 	def neighborSearch(self, y, x, increment, colour, direction): #this is either cursed or genius
+		peiceFound = False
 		targets = self.peices[[0 if colour == 'white' else 1][0]]
 		if direction == 'diagonal':
 			neighbors = [(x+increment,y+increment),(x-increment,y+increment),(x+increment,y-increment),(x-increment,y-increment)]
 		if direction == 'linear':
-			neighbors = [(x+increment,y),(x,y+increment),(x-increment,y),(x,y-increment)]
+			neighbors = [(x+increment,y),(x,y+increment),(x-increment,y),(x,y-increment)] #TODO: check these line up
 		for i in range(4):
-			while !peiceFound:
-				result =  filter(lambda lookup: self.board[y][x] in (' - ', ' x ', targets), neighbors[i])
-				if board[y][x] in targets:
+			while not peiceFound:
+				result = filter(lambda lookup: self.board[y][x] in (' - ', ' x ', targets), neighbors[i])
+				if self.board[y][x] in targets: #TODO: this is wrong
 					peiceFound == True
-				yield result
+				for i in result: #TODO: something fucky is happening here
+					print(i)
+				if len(list(result)) != 0:
+					yield result
+				else:
+					yield 0
 
 	def ruleCheck(self, yStart, xStart, yEnd, xEnd):
 		c = 0
 		#use colour codes to determine peice colour
-		#determine what peice and how it can move, call functions appropiately
-		while counter != limit: 
-			neighbors = self.neighborSearch(yStart,xStart, c, 'white', '')
-			if len(neighbors) == 0:
+		#determine what peice and how it can move and it's limit, call functions appropiately
+		limit = 1
+		i = 0
+		breaking = False
+		while c != limit: 
+			for j in self.neighborSearch(yStart,xStart, i, 'white', 'linear'):
+				if j == 0:
+					breaking = True
+					break
+				for y,x in j:
+					if (y,x) == (yEnd, xEnd):
+						return True
+				i+=1
+			if breaking == True:
 				break
-			for y,x in neighbors:
-				if (y,x) == (yEnd, xEnd):
-					return True
 			c+=1
 		return False
 
