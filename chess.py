@@ -11,30 +11,34 @@ class game():
 		self.show()
 
 	def setupBoard(self):
-		board = np.empty((10,10), dtype=object) #empty over zeros for that s p e e d
-		board[0, [i for i in range(9)]] = ' = '
-		board[9, [i for i in range(9)]] =  ' = '
+		board = np.empty((11,11), dtype=object) #empty over zeros for that s p e e d
+		board[0, [i for i in range(10)]] = ' = '
+		board[9, [i for i in range(10)]] =  ' = '
 		board[0][-1] = ' '
 		board[9][-1] = ' '
-		for y in range(1,9): 
-			for x in range(10): 
-				if x == 0 or x == 9:
+		for c, y in enumerate(range(1,11)): 
+			for j, x in enumerate(range(11)): 
+				if x == 0:
+					board[y][x] = str(8-c)
+				elif x == 1 or x == 10:
 					board[y][x] = '|'
-				else:
+				elif y == 10 and x > 1 and x < 10:
+					board[y][x] = ' '+chr(97+j-2)+' '
+				elif y != 9:
 					board[y][x] = [' - ' if (x+y+1)%2 == 0 else ' x '][0] #- is white space, x is black
-		
+
 		peices = [[' ♖ ',' ♘ ',' ♗ ',' ♕ ',' ♔ ',' ♗ ',' ♘ ',' ♖ '],[' ♜ ',' ♞ ',' ♝ ',' ♛ ',' ♚ ',' ♝ ',' ♞ ',' ♜ ']]
-		for c,y in enumerate([1,-2]):
-			for x in range(1,9):
+		for c,y in enumerate([1,-3]):
+			for x in range(2,9):
 				board[y][x] = peices[c][x-1]
 				
-		board[2][[i for i in range(1,9)]] = ' ♙ '
-		board[-3][[i for i in range(1,9)]] = ' ♟ '
+		board[2][[i for i in range(2,10)]] = ' ♙ '
+		board[-4][[i for i in range(2,10)]] = ' ♟ '
 
 		return board
 
 	def show(self):
-		print(''.join(np.insert(self.board, [i*10 for i in range(1,10)], '\n')), '\n')
+		print(''.join(np.insert(self.board, [i*11 for i in range(1,12)], '\n')), '\n')
 
 	def neighborSearch(self, y, x, increment, colour, direction): #this is either cursed or genius
 		peiceFound = False
