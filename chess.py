@@ -12,28 +12,37 @@ class game():
 
 	def setupBoard(self):
 		board = np.empty((11,11), dtype=object) #empty over zeros for that s p e e d
-		board[0, [i for i in range(10)]] = ' = '
-		board[9, [i for i in range(10)]] =  ' = '
-		board[0][-1] = ' '
-		board[9][-1] = ' '
+		board[0, [i for i in range(2,10)]] = ' = '
+		board[9, [i for i in range(9)]] =  ' = '
+		board[0][-1] = '| '
+		board[9][-1] = '  '
 		for c, y in enumerate(range(1,11)): 
 			for j, x in enumerate(range(11)): 
 				if x == 0:
 					board[y][x] = str(8-c)
-				elif x == 1 or x == 10:
+				elif (x== 1 or x == 10) and y < 10:
 					board[y][x] = '|'
-				elif y == 10 and x > 1 and x < 10:
+				elif y == 10 and x < 10:
 					board[y][x] = ' '+chr(97+j-2)+' '
-				elif y != 9:
+				elif y < 9:
 					board[y][x] = [' - ' if (x+y+1)%2 == 0 else ' x '][0] #- is white space, x is black
 
 		peices = [[' ♖ ',' ♘ ',' ♗ ',' ♕ ',' ♔ ',' ♗ ',' ♘ ',' ♖ '],[' ♜ ',' ♞ ',' ♝ ',' ♛ ',' ♚ ',' ♝ ',' ♞ ',' ♜ ']]
 		for c,y in enumerate([1,-3]):
-			for x in range(2,9):
-				board[y][x] = peices[c][x-1]
+			for x in range(2,10):
+				board[y][x] = peices[c][x-2]
 				
 		board[2][[i for i in range(2,10)]] = ' ♙ '
 		board[-4][[i for i in range(2,10)]] = ' ♟ '
+
+
+		#some hard codes to make the board look nice
+		board[-1][[0,1,-1]] = ' '
+		board[0][1] = ''
+		board[0][0] = ' |'
+		board[-1][0] = ' '
+		board[-2][0] = ' '
+		board[-2][-2] = ' = '
 
 		return board
 
