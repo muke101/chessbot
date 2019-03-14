@@ -37,7 +37,7 @@ class game():
 		board[-4][[i for i in range(2,10)]] = ' ♟ '
 
 
-		#some hard codes to make the board look nice
+		#some hard code to make the board look nice
 		board[-1][[0,1,-1]] = ' '
 		board[0][1] = ''
 		board[0][0] = '|'
@@ -62,10 +62,10 @@ class game():
 			while not peiceFound: #TODO: consider corner cases of board characters
 				y,x = (yStart+yInc,xStart+xInc)
 				if self.board[y][x] in (' = ', '|') or self.board[y][x] in self.peices[0] or self.board[y][x] in self.peices[1]: #check if direction has found any other peice or board edge
-					if (y,x) == (yEnd,xEnd): #destination found with legal means
+					if (y,x) == (yEnd,xEnd) and self.board[y][x] in targets:
 						return True	
 					peiceFound = True
-				elif (y,x) == (yEnd,xEnd): #destination found with legal means
+				elif (y,x) == (yEnd,xEnd):
 					return True	#works for taking too as function goes upto and including first peice
 
 				if xInc > 0:  #Keeps 0's at 0 and -1 deincrementing
@@ -82,6 +82,7 @@ class game():
 	def ruleCheck(self, yStart, xStart, yEnd, xEnd): 
 	#TODO's:	#make sure you can't index outside the board
 				#use character codes to determine peice colour/or just input player colour
+				#implement check
 				#determine what peice and how it can move and it's limit, call functions appropiately
 		return self.neighborSearch(yStart, xStart, yEnd, xEnd, 'white', 'linear')
 
@@ -101,7 +102,7 @@ class game():
 				self.board[yStart][xStart] = [' - ' if (xStart+yStart+1)%2 == 0 else ' x '][0]
 				break
 			else:
-				print("illegal move")
+				print("Illegal move")
 
 
 game()
