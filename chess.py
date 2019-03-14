@@ -50,21 +50,22 @@ class game():
 	def show(self):
 		print('\n',''.join(np.insert(self.board, [i*11 for i in range(1,12)], '\n')), '\n')
 
-	def neighborSearch(self, yStart, xStart, yEnd, xEnd, increment, colour, direction): #this is either cursed or genius
+	def neighborSearch(self, yStart, xStart, yEnd, xEnd, colour, direction): #this is either cursed or genius
 		targets = self.peices[[0 if colour == 'white' else 1][0]]
 		if direction == 'diagonal':
 			incrementList = [(1,1),(1,-1),(-1,1),(-1,-1)]
 		if direction == 'linear':
-			incrementList = [(1,0),(0,1),(-1,0),(0,-1)]
+			incrementList = [(-1,0),(0,-1),(1,0),(0,1)]
 
 		for yInc,xInc in incrementList: #Allows us to transverse in one direction incrementally at a time.
 			peiceFound = False
-			while not peiceFound:
+			while not peiceFound: #TODO: consider corner cases of board characters
 				y,x = (yStart+yInc,xStart+xInc)
-
-				if self.board[y][x] in (' = ', ' | ', self.peices): #check if direction has found any other peice or board edge
-					peiceFound = True #indicate this direction is a dead end
-				if (y,x) == (yEnd,xEnd): #destination found with legal means
+				if self.board[y][x] in (' = ', '|') or self.board[y][x] in self.peices[0] or self.board[y][x] in self.peices[1]: #check if direction has found any other peice or board edge
+					if (y,x) == (yEnd,xEnd): #destination found with legal means
+						return True	
+					peiceFound = True
+				elif (y,x) == (yEnd,xEnd): #destination found with legal means
 					return True	#works for taking too as function goes upto and including first peice
 
 				if xInc > 0:  #Keeps 0's at 0 and -1 deincrementing
@@ -78,39 +79,23 @@ class game():
 
 		return False #all directions exhausted without destination found
 
-	def ruleCheck(self, yStart, xStart, yEnd, xEnd):
-		c = 0
-		#use colour codes to determine peice colour
-		#determine what peice and how it can move and it's limit, call functions appropiately
-		limit = 1
-		i = 0
-		breaking = False
-		while c != limit: 
-			gen = self.neighborSearch(yStart,xStart, i, 'white', 'linear') #generator not reevaulated each iteration, i=0 for whole for loop
-			for j in gen:
-				if j == 0:
-					breaking = True
-					break
-				for y,x in j:
-					if (y,x) == (yEnd, xEnd):
-						return True
-				i+=1
-			if breaking == True:
-				break
-			c+=1
-		return False
-
+	def ruleCheck(self, yStart, xStart, yEnd, xEnd): 
+	#TODO's:	#make sure you can't index outside the board
+				#use character codes to determine peice colour/or just input player colour
+				#determine what peice and how it can move and it's limit, call functions appropiately
+		return self.neighborSearch(yStart, xStart, yEnd, xEnd, 'white', 'linear')
 
 
 	def move(self): 
 		while True:
 			move = input('Enter move: ') #TODO: make sure input in constrained to grid (a-h, 1-8)
-			start, end = move.split(' ')
+			start, end = move.split(' ') 
 
-			yStart = 9-(int(start[1])) #9 minus value as chess is decending while the matrix is increasing
+			yStart = 9-int(start[1]) #9 minus value as chess is decending while the matrix is increasing
 			xStart = (ord(start[0]) - 97)+2 #a's ascii code is 97 (+2 for indexing)
-			yEnd = 9-(int(end[1]))
+			yEnd = 9-int(end[1])
 			xEnd = (ord(end[0]) - 97)+2
+
 			if self.ruleCheck(yStart, xStart, yEnd, xEnd):
 				self.board[yEnd][xEnd] = self.board[yStart][xStart]
 				self.board[yStart][xStart] = [' - ' if (xStart+yStart+1)%2 == 0 else ' x '][0]
