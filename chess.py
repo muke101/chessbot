@@ -27,6 +27,7 @@ class game():
 				elif y < 9:
 					board[y][x] = [' - ' if (x+y+1)%2 == 0 else ' x '][0] #- is white space, x is black
 
+		#arranging peice list in order it's layed out just for this loop
 		peices = [[' ♖ ',' ♘ ',' ♗ ',' ♕ ',' ♔ ',' ♗ ',' ♘ ',' ♖ '],[' ♜ ',' ♞ ',' ♝ ',' ♛ ',' ♚ ',' ♝ ',' ♞ ',' ♜ ']]
 		for c,y in enumerate([1,-3]):
 			for x in range(2,10):
@@ -39,7 +40,7 @@ class game():
 		#some hard codes to make the board look nice
 		board[-1][[0,1,-1]] = ' '
 		board[0][1] = ''
-		board[0][0] = ' |'
+		board[0][0] = '|'
 		board[-1][0] = ' '
 		board[-2][0] = ' '
 		board[-2][-2] = ' = '
@@ -47,26 +48,35 @@ class game():
 		return board
 
 	def show(self):
-		print(''.join(np.insert(self.board, [i*11 for i in range(1,12)], '\n')), '\n')
+		print('\n',''.join(np.insert(self.board, [i*11 for i in range(1,12)], '\n')), '\n')
 
-	def neighborSearch(self, y, x, increment, colour, direction): #this is either cursed or genius
-		peiceFound = False
+	def neighborSearch(self, yStart, xStart, yEnd, xEnd, increment, colour, direction): #this is either cursed or genius
 		targets = self.peices[[0 if colour == 'white' else 1][0]]
 		if direction == 'diagonal':
-			neighbors = [(x+increment,y+increment),(x-increment,y+increment),(x+increment,y-increment),(x-increment,y-increment)]
+			incrementList = [(1,1),(1,-1),(-1,1),(-1,-1)]
 		if direction == 'linear':
-			neighbors = [(x+increment,y),(x,y+increment),(x-increment,y),(x,y-increment)] #TODO: check these line up
-		for i in range(4):
+			incrementList = [(1,0),(0,1),(-1,0),(0,-1)]
+
+		for yInc,xInc in incrementList: #Allows us to transverse in one direction incrementally at a time.
+			peiceFound = False
 			while not peiceFound:
-				result = filter(lambda lookup: self.board[y][x] in (' - ', ' x ', targets), neighbors[i])
-				if self.board[y][x] in targets: #TODO: this is wrong
-					peiceFound == True
-				for i in result: #TODO: something fucky is happening here
-					print(i)
-				if len(list(result)) != 0:
-					yield result
-				else:
-					yield 0
+				y,x = (yStart+yInc,xStart+xInc)
+
+				if self.board[y][x] in (' = ', ' | ', self.peices): #check if direction has found any other peice or board edge
+					peiceFound = True #indicate this direction is a dead end
+				if (y,x) == (yEnd,xEnd): #destination found with legal means
+					return True	#works for taking too as function goes upto and including first peice
+
+				if xInc > 0:  #Keeps 0's at 0 and -1 deincrementing
+					xInc+=1
+				if yInc > 0:
+					yInc+=1
+				if xInc < 0:
+					xInc-=1
+				if yInc < 0: #is this horribly hacky I wonder? Hope not.
+					yInc-=1
+
+		return False #all directions exhausted without destination found
 
 	def ruleCheck(self, yStart, xStart, yEnd, xEnd):
 		c = 0
@@ -76,7 +86,8 @@ class game():
 		i = 0
 		breaking = False
 		while c != limit: 
-			for j in self.neighborSearch(yStart,xStart, i, 'white', 'linear'):
+			gen = self.neighborSearch(yStart,xStart, i, 'white', 'linear') #generator not reevaulated each iteration, i=0 for whole for loop
+			for j in gen:
 				if j == 0:
 					breaking = True
 					break
@@ -100,10 +111,9 @@ class game():
 			xStart = (ord(start[0]) - 97)+2 #a's ascii code is 97 (+2 for indexing)
 			yEnd = 9-(int(end[1]))
 			xEnd = (ord(end[0]) - 97)+2
-			#self.ruleCheck(yStart, xStart, yEnd, xEnd)
-			if True:
+			if self.ruleCheck(yStart, xStart, yEnd, xEnd):
 				self.board[yEnd][xEnd] = self.board[yStart][xStart]
-				self.board[yStart][xStart] = [' - ' if (xStart+yStart+2)%2 == 0 else ' x '][0]
+				self.board[yStart][xStart] = [' - ' if (xStart+yStart+1)%2 == 0 else ' x '][0]
 				break
 			else:
 				print("illegal move")
