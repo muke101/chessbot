@@ -5,11 +5,12 @@ class game():
 	def __init__(self):
 		self.checkMate = False
 		self.board = self.setupBoard()
+		self.playerColour = input("Whites or blacks? ") #TODO: make this actually mean something lol
 		self.peices = [[' ♖ ',' ♘ ',' ♗ ',' ♕ ',' ♔ ',' ♙ '],[' ♜ ',' ♞ ',' ♝ ',' ♛ ',' ♚ ',' ♟ ']]
-		self.show()
-		self.move()
-		self.show()
-
+		while True:
+			self.show()
+			self.move()
+			
 	def setupBoard(self):
 		board = np.empty((11,11), dtype=object) #empty over zeros for that s p e e d
 		board[0, [i for i in range(2,10)]] = ' = '
@@ -50,12 +51,13 @@ class game():
 	def show(self):
 		print('\n',''.join(np.insert(self.board, [i*11 for i in range(1,12)], '\n')), '\n')
 
-	def neighborSearch(self, yStart, xStart, yEnd, xEnd, colour, direction): #this is either cursed or genius
-		targets = self.peices[[0 if colour == 'white' else 1][0]]
+	def neighborSearch(self, yStart, xStart, direction, yEnd=None, xEnd=None): #this is either cursed or genius
+		targets = self.peices[[0 if self.playerColour == 'white' else 1][0]]
 		if direction == 'diagonal':
 			incrementList = [(1,1),(1,-1),(-1,1),(-1,-1)]
 		if direction == 'linear':
 			incrementList = [(-1,0),(0,-1),(1,0),(0,1)]
+		squareList = []
 
 		for yInc,xInc in incrementList: #Allows us to transverse in one direction incrementally at a time.
 			peiceFound = False
@@ -77,14 +79,27 @@ class game():
 				if yInc < 0: #is this horribly hacky I wonder? Hope not.
 					yInc-=1
 
-		return False #all directions exhausted without destination found
+				squareList.append((y,x))
+
+		if yEnd != None:
+			return False #all directions exhausted without destination found
+		else:
+			return squareList #returns all possible movement locations for the bot
 
 	def ruleCheck(self, yStart, xStart, yEnd, xEnd): 
 	#TODO's:	#make sure you can't index outside the board
-				#use character codes to determine peice colour/or just input player colour
 				#implement check
 				#determine what peice and how it can move and it's limit, call functions appropiately
-		return self.neighborSearch(yStart, xStart, yEnd, xEnd, 'white', 'linear')
+
+		peice = self.board[yStart][xStart]
+		if peice in (' ♖ ', ' ♜ ') :
+			return self.neighborSearch(yStart, xStart, 'linear', yEnd, xEnd)
+		if peice in (' ♗ ', ' ♝ '):
+			return self.neighborSearch(yStart, xStart, 'linear', yEnd, xEnd)
+		if peice in (' ♕ ', ' ♛ '):
+			return (self.neighborSearch(yStart, xStart, 'diagonal', yEnd, xEnd) or self.neighborSearch(yStart, xStart, 'linear', yEnd, xEnd))
+		if peice in (' ♟ ', ' ♙ '):
+			return True
 
 
 	def move(self): 
