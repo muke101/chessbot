@@ -51,8 +51,8 @@ class game():
 	def show(self):
 		print('\n',''.join(np.insert(self.board, [i*11 for i in range(1,12)], '\n')), '\n')
 
-	def neighborSearch(self, yStart, xStart, direction, yEnd=None, xEnd=None): #this is either cursed or genius
-		targets = self.peices[[0 if self.playerColour == 'white' else 1][0]]
+	def neighborSearch(self, yStart, xStart, colour, direction, yEnd=None, xEnd=None): #this is either cursed or genius
+		targets = self.peices[[0 if colour == 'white' else 1][0]]
 		if direction == 'diagonal':
 			incrementList = [(1,1),(1,-1),(-1,1),(-1,-1)]
 		if direction == 'linear':
@@ -128,22 +128,30 @@ class game():
 				c+=1
 
 
+	def knightSearch(self, yStart, xStart, yEnd=None, xEnd=None):
+		targets = self.peices[[0 if colour == 'white' else 1][0]]
+
+
 	def ruleCheck(self, yStart, xStart, yEnd, xEnd): 
 	#TODO's:	#make sure you can't index outside the board
 				#implement check
 				#determine what peice and how it can move and it's limit, call functions appropiately
+		if ord((self.board[yStart][xStart])[1:2]) <= 9817: #black characters range from 9812 to 9817, white from 9818 to 9824
+			colour = 'black'
+		else:
+			colour = 'white'
 
 		peice = self.board[yStart][xStart]
 		if peice in (' ♖ ', ' ♜ ') :
-			return self.neighborSearch(yStart, xStart, 'linear', yEnd, xEnd)
+			return self.neighborSearch(yStart, xStart, colour, 'linear', yEnd, xEnd)
 		if peice in (' ♗ ', ' ♝ '):
-			return self.neighborSearch(yStart, xStart, 'diagonal', yEnd, xEnd)
+			return self.neighborSearch(yStart, xStart, colour, 'diagonal', yEnd, xEnd)
 		if peice in (' ♕ ', ' ♛ '):
-			return (self.neighborSearch(yStart, xStart, 'diagonal', yEnd, xEnd) or self.neighborSearch(yStart, xStart, 'linear', yEnd, xEnd))
-		if peice == ' ♟ ':
-			return self.pawnSearch(yStart, xStart, 'white', yEnd, xEnd)
-		if peice == ' ♙ ':
-			return self.pawnSearch(yStart, xStart, 'black', yEnd, xEnd)
+			return (self.neighborSearch(yStart, xStart, colour, 'diagonal', yEnd, xEnd) or self.neighborSearch(yStart, xStart, colour, 'linear', yEnd, xEnd))
+		if peice in (' ♘ ', ' ♞ '):
+			return self.knightSearch(yStart, xStart, yEnd, xEnd)
+		if peice in (' ♟ ', ' ♙ '):
+			return self.pawnSearch(yStart, xStart, colour, yEnd, xEnd)
 
 
 	def move(self): 
