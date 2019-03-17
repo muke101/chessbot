@@ -128,9 +128,14 @@ class game():
 				c+=1
 
 
-	def knightSearch(self, yStart, xStart, yEnd=None, xEnd=None):
+	def knightSearch(self, yStart, xStart, colour, yEnd=None, xEnd=None):
 		targets = self.peices[[0 if colour == 'white' else 1][0]]
-
+		increment = [(-2,1),(-1,2),(-2,-1),(-1,-2),(2,1),(2,-1),(1,-2),(1,2)]
+		for i in increment:
+			y,x = (yStart+i[0], xStart+i[1])
+			if self.board[y][x] in (' - ', ' x ') or self.board[y][x] in targets:
+				if (y,x) == (yEnd,xEnd):
+					return True
 
 	def ruleCheck(self, yStart, xStart, yEnd, xEnd): 
 	#TODO's:	#make sure you can't index outside the board
@@ -149,7 +154,7 @@ class game():
 		if peice in (' ♕ ', ' ♛ '):
 			return (self.neighborSearch(yStart, xStart, colour, 'diagonal', yEnd, xEnd) or self.neighborSearch(yStart, xStart, colour, 'linear', yEnd, xEnd))
 		if peice in (' ♘ ', ' ♞ '):
-			return self.knightSearch(yStart, xStart, yEnd, xEnd)
+			return self.knightSearch(yStart, xStart, colour, yEnd, xEnd)
 		if peice in (' ♟ ', ' ♙ '):
 			return self.pawnSearch(yStart, xStart, colour, yEnd, xEnd)
 
