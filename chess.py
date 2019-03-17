@@ -86,6 +86,48 @@ class game():
 		else:
 			return squareList #returns all possible movement locations for the bot
 
+	def pawnSearch(self, yStart, xStart, colour, yEnd=None, xEnd=None): #TODO: implement french thing and upgrade at end of board
+		targets = self.peices[[0 if colour == 'white' else 1][0]]
+		limit = 1
+		c = 0
+		peiceFound = False
+		if colour == 'white':
+			if yStart == 7:
+				limit = 2
+			increment = (-1,0)
+			take = [(-1,-1),(-1,1)]
+		if colour == 'black':
+			if yStart == 2:
+				limit = 2
+			increment = (1,0)
+			take = [(1,-1),(1,1)]
+		yInc = increment[0]
+		xInc = increment[1]
+
+		if self.board[yEnd][xEnd] in targets:
+			for coords in take:
+				yInc = coords[0]
+				xInc = coords[1]
+				y,x = (yStart+yInc, xStart+xInc)
+				
+				if (y,x) == (yEnd,xEnd):
+					return True
+			return False
+		else:
+			while not peiceFound and c != limit:
+				y,x = (yStart+yInc, xStart+xInc)
+				if self.board[y][x] in (' = ', '|') or self.board[y][x] in self.peices[0] or self.board[y][x] in self.peices[1]:
+					return False
+				elif (y,x) == (yEnd,xEnd):
+					return True
+
+				if yInc > 0:
+					yInc+=1
+				if yInc < 0:
+					yInc-=1
+				c+=1
+
+
 	def ruleCheck(self, yStart, xStart, yEnd, xEnd): 
 	#TODO's:	#make sure you can't index outside the board
 				#implement check
@@ -95,11 +137,13 @@ class game():
 		if peice in (' ♖ ', ' ♜ ') :
 			return self.neighborSearch(yStart, xStart, 'linear', yEnd, xEnd)
 		if peice in (' ♗ ', ' ♝ '):
-			return self.neighborSearch(yStart, xStart, 'linear', yEnd, xEnd)
+			return self.neighborSearch(yStart, xStart, 'diagonal', yEnd, xEnd)
 		if peice in (' ♕ ', ' ♛ '):
 			return (self.neighborSearch(yStart, xStart, 'diagonal', yEnd, xEnd) or self.neighborSearch(yStart, xStart, 'linear', yEnd, xEnd))
-		if peice in (' ♟ ', ' ♙ '):
-			return True
+		if peice == ' ♟ ':
+			return self.pawnSearch(yStart, xStart, 'white', yEnd, xEnd)
+		if peice == ' ♙ ':
+			return self.pawnSearch(yStart, xStart, 'black', yEnd, xEnd)
 
 
 	def move(self): 
