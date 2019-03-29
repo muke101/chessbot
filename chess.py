@@ -137,10 +137,30 @@ class game():
 				if (y,x) == (yEnd,xEnd):
 					return True
 
+	def inCheck(self, colour):
+		targets = self.peices[[0 if colour == 'white' else 1][0]]
+		breaking = False
+		king = [' ♚ ' if colour == 'white' else ' ♔ '][0]
+
+		for y in range(1,9): #start by finding the king
+			for x in range(2,10):
+				if self.board[y][x] == king:
+					self.kingPos = (y,x)
+					breaking = True
+					break
+			if breaking == True: #god I wish python let you break out of nested loops easier
+				break
+
+		for y in range(1,9):
+			for x in range(2,10):
+				if self.board[y][x] in targets:
+					if self.ruleCheck(y, x, self.kingPos[0], self.kingPos[1]) == True: #this is unintentionally the most genius thing I've ever done
+						return True
+
+		return False
+
 	def ruleCheck(self, yStart, xStart, yEnd, xEnd): 
 	#TODO's:	#make sure you can't index outside the board
-				#implement check
-				#determine what peice and how it can move and it's limit, call functions appropiately
 		if ord((self.board[yStart][xStart])[1:2]) <= 9817: #black characters range from 9812 to 9817, white from 9818 to 9824
 			colour = 'black'
 		else:
