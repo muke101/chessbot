@@ -159,14 +159,14 @@ class game():
 
 		return False
 
+	def getColour(self,y,x):
+		return 'black' if ord((self.board[y][x])[1:2]) <= 9817 else 'white'
+
 	def ruleCheck(self, yStart, xStart, yEnd, xEnd): 
 	#TODO's:	#make sure you can't index outside the board
-		if ord((self.board[yStart][xStart])[1:2]) <= 9817: #black characters range from 9812 to 9817, white from 9818 to 9824
-			colour = 'black'
-		else:
-			colour = 'white'
-
+		colour = self.getColour(yStart,xStart)
 		peice = self.board[yStart][xStart]
+
 		if peice in (' ♖ ', ' ♜ ') :
 			return self.neighborSearch(yStart, xStart, colour, 'linear', yEnd, xEnd)
 		if peice in (' ♗ ', ' ♝ '):
@@ -189,10 +189,17 @@ class game():
 			yEnd = 9-int(end[1])
 			xEnd = (ord(end[0]) - 97)+2
 
+			colour = self.getColour(yStart, xStart)
+
 			if self.ruleCheck(yStart, xStart, yEnd, xEnd):
 				self.board[yEnd][xEnd] = self.board[yStart][xStart]
 				self.board[yStart][xStart] = [' - ' if (xStart+yStart+1)%2 == 0 else ' x '][0]
-				break
+				if inCheck(colour):
+					self.board[yStart][xStart] = self.board[yEnd][xEnd]
+					self.board[yEnd][xEnd] = [' - ' if (xEnd+yEnd+1)%2 == 0 else ' x '][0]
+					print("Move places you in check.")
+				else:
+					break
 			else:
 				print("Illegal move")
 
