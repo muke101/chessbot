@@ -192,11 +192,12 @@ class game():
 			colour = self.getColour(yStart, xStart)
 
 			if self.ruleCheck(yStart, xStart, yEnd, xEnd):
+				target = self.board[yEnd][xEnd] #saves whatever was in square in case move is still illegal
 				self.board[yEnd][xEnd] = self.board[yStart][xStart]
 				self.board[yStart][xStart] = [' - ' if (xStart+yStart+1)%2 == 0 else ' x '][0]
 				if self.inCheck(colour):
 					self.board[yStart][xStart] = self.board[yEnd][xEnd]
-					self.board[yEnd][xEnd] = [' - ' if (xEnd+yEnd+1)%2 == 0 else ' x '][0]
+					self.board[yEnd][xEnd] = target
 					print("Move sustains/places you in check.")
 				else:
 					break
