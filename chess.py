@@ -194,10 +194,10 @@ class game():
 			if self.ruleCheck(yStart, xStart, yEnd, xEnd):
 				self.board[yEnd][xEnd] = self.board[yStart][xStart]
 				self.board[yStart][xStart] = [' - ' if (xStart+yStart+1)%2 == 0 else ' x '][0]
-				if inCheck(colour):
+				if self.inCheck(colour):
 					self.board[yStart][xStart] = self.board[yEnd][xEnd]
 					self.board[yEnd][xEnd] = [' - ' if (xEnd+yEnd+1)%2 == 0 else ' x '][0]
-					print("Move places you in check.")
+					print("Move sustains/places you in check.")
 				else:
 					break
 			else:
