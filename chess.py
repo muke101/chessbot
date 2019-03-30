@@ -51,7 +51,7 @@ class game():
 	def show(self):
 		print('\n',''.join(np.insert(self.board, [i*11 for i in range(1,12)], '\n')), '\n')
 
-	def neighborSearch(self, yStart, xStart, colour, direction, yEnd=None, xEnd=None): #this is either cursed or genius
+	def search(self, yStart, xStart, colour, direction, yEnd=None, xEnd=None): #this is either cursed or genius
 		targets = self.peices[[0 if colour == 'white' else 1][0]]
 		if direction == 'diagonal':
 			incrementList = [(1,1),(1,-1),(-1,1),(-1,-1)]
@@ -63,8 +63,9 @@ class game():
 			peiceFound = False
 			while not peiceFound: #TODO: consider corner cases of board characters
 				y,x = (yStart+yInc,xStart+xInc)
-				if self.board[y][x] in (' = ', '|') or self.board[y][x] in self.peices[0] or self.board[y][x] in self.peices[1]: #check if direction has found any other peice or board edge
-					if (y,x) == (yEnd,xEnd) and self.board[y][x] in targets:
+				position = self.board[y][x]
+				if position in (' = ', '|') or position in self.peices[0] or position in self.peices[1]: #check if direction has found any other peice or board edge
+					if (y,x) == (yEnd,xEnd) and position in targets:
 						return True	
 					peiceFound = True
 				elif (y,x) == (yEnd,xEnd):
@@ -93,17 +94,17 @@ class game():
 		peiceFound = False
 		if colour == 'white':
 			if yStart == 7:
-				limit = 2
+				limit <<= 1
 			increment = (-1,0)
 			take = [(-1,-1),(-1,1)]
 		if colour == 'black':
 			if yStart == 2:
-				limit = 2
+				limit <<= 1
 			increment = (1,0)
 			take = [(1,-1),(1,1)]
 		yInc = increment[0]
 		xInc = increment[1]
-
+		
 		if self.board[yEnd][xEnd] in targets:
 			for coords in take:
 				yInc = coords[0]
@@ -116,7 +117,8 @@ class game():
 		else:
 			while not peiceFound and c != limit:
 				y,x = (yStart+yInc, xStart+xInc)
-				if self.board[y][x] in (' = ', '|') or self.board[y][x] in self.peices[0] or self.board[y][x] in self.peices[1]:
+				position = self.board[y][x]
+				if position in (' = ', '|') or position in self.peices[0] or position in self.peices[1]:
 					return False
 				elif (y,x) == (yEnd,xEnd):
 					return True
@@ -133,10 +135,23 @@ class game():
 		increment = [(-2,1),(-1,2),(-2,-1),(-1,-2),(2,1),(2,-1),(1,-2),(1,2)]
 		for i in increment:
 			y,x = (yStart+i[0], xStart+i[1])
-			if self.board[y][x] in (' - ', ' x ') or self.board[y][x] in targets:
+			position = self.board[y][x]
+			if position in (' - ', ' x ') or position in targets:
 				if (y,x) == (yEnd,xEnd):
 					return True
 
+	def kingSearch(self, yStart, xStart, colour, yEnd=None, xEnd=None):
+		increments = [(1,1),(-1,-1),(1,-1),(-1,1),(0,1),(1,0),(-1,0),(0,-1)]
+		allyes = self.peices[[0 if colour == 'black' else 1][0]]
+		for yInc,xInc in increments:
+			y,x = (yStart+yInc,xStart+xInc)
+			position = self.board[y][x]
+			if position not in ('|', ' = ') and position not in allyes:
+				if (y,x) == (yEnd,xEnd):
+					return True
+		return False
+
+	#TODO: make more efficeint by only calculating peices in king's line of sight, not all peices
 	def inCheck(self, colour):
 		targets = self.peices[[0 if colour == 'white' else 1][0]]
 		breaking = False
@@ -168,16 +183,17 @@ class game():
 		peice = self.board[yStart][xStart]
 
 		if peice in (' ♖ ', ' ♜ ') :
-			return self.neighborSearch(yStart, xStart, colour, 'linear', yEnd, xEnd)
+			return self.search(yStart, xStart, colour, 'linear', yEnd, xEnd)
 		if peice in (' ♗ ', ' ♝ '):
-			return self.neighborSearch(yStart, xStart, colour, 'diagonal', yEnd, xEnd)
+			return self.search(yStart, xStart, colour, 'diagonal', yEnd, xEnd)
 		if peice in (' ♕ ', ' ♛ '):
-			return (self.neighborSearch(yStart, xStart, colour, 'diagonal', yEnd, xEnd) or self.neighborSearch(yStart, xStart, colour, 'linear', yEnd, xEnd))
-		if peice in (' ♘ ', ' ♞ '):
+			return (self.search(yStart, xStart, colour, 'diagonal', yEnd, xEnd) or self.search(yStart, xStart, colour, 'linear', yEnd, xEnd))
+		if peice in (' ♞ ', ' ♘ '):
 			return self.knightSearch(yStart, xStart, colour, yEnd, xEnd)
 		if peice in (' ♟ ', ' ♙ '):
 			return self.pawnSearch(yStart, xStart, colour, yEnd, xEnd)
-
+		if peice in (' ♚ ', ' ♔ '):
+			return self.kingSearch(yStart, xStart, colour, yEnd, xEnd)
 
 	def move(self): 
 		while True:
