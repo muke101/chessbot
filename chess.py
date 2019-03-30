@@ -90,13 +90,6 @@ class game():
 		else:
 			return squareList #returns all possible movement locations for the bot
 
-	def pawnUpgrade(self, colour, y, x):
-		selection = [i for i in self.peices[[1 if colour == 'black' else 0][0]] if i not in (' ♟ ',' ♚ ', ' ♔ ', ' ♙ ')] #filter peices that can't be upgraded to
-		names = ["rook", "knight", "bishop", "queen"]
-		peiceDict = {name:i for name, i in zip(names,selection)}
-		upgradeTo = input("Enter peice to upgrade to: Queen, Knight, Bishop, Rook ").lower()
-		self.board[y][x] = peiceDict[upgradeTo] #this gets overridden by the move function
-
 	def pawnSearch(self, yStart, xStart, colour, yEnd=None, xEnd=None): #TODO: implement french thing
 		targets = self.peices[[0 if colour == 'white' else 1][0]]
 		limit = 1
@@ -125,7 +118,7 @@ class game():
 				
 				if (y,x) == (yEnd,xEnd):
 					if yEnd == upgradeRow:
-						self.pawnUpgrade(colour, yEnd, xEnd)
+						self.pawnUpgrade(colour, yStart, xStart)
 					return True
 			return False
 		else:
@@ -136,7 +129,7 @@ class game():
 					return False
 				elif (y,x) == (yEnd,xEnd):
 					if yEnd == upgradeRow:
-						self.pawnUpgrade(colour, yEnd, xEnd)
+						self.pawnUpgrade(colour, yStart, xStart)
 					return True
 
 				if yInc > 0:
@@ -144,6 +137,13 @@ class game():
 				if yInc < 0:
 					yInc-=1
 				c+=1
+
+	def pawnUpgrade(self, colour, y, x):
+		selection = [i for i in self.peices[[0 if colour == 'black' else 1][0]] if i not in (' ♟ ',' ♚ ', ' ♔ ', ' ♙ ')] #filter peices that can't be upgraded to
+		names = ["rook", "knight", "bishop", "queen"]
+		peiceDict = {name:i for name, i in zip(names,selection)}
+		upgradeTo = input("Enter peice to upgrade to (Queen, Knight, Bishop, Rook): ").lower()
+		self.board[y][x] = peiceDict[upgradeTo] #this gets overridden by the move function
 
 
 	def knightSearch(self, yStart, xStart, colour, yEnd=None, xEnd=None):
