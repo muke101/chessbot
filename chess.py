@@ -191,7 +191,6 @@ class game():
 		return False
 
 	def ruleCheck(self, yStart, xStart, yEnd, xEnd): 
-	#TODO's:	#make sure you can't index outside the board
 		colour = self.getColour(yStart,xStart)
 		peice = self.board[yStart][xStart]
 
@@ -210,28 +209,44 @@ class game():
 
 	def move(self): #TODO: don't let player control other sides peices lol
 		while True:
+			malformed = False
 			move = input('Enter move: ') #TODO: make sure input in constrained to grid (a-h, 1-8)
-			start, end = move.split(' ') 
 
-			yStart = 9-int(start[1]) #9 minus value as chess is decending while the matrix is increasing
-			xStart = (ord(start[0]) - 97)+2 #a's ascii code is 97 (+2 for indexing)
-			yEnd = 9-int(end[1])
-			xEnd = (ord(end[0]) - 97)+2
+			try:
+				start, end = move.split(' ') 
+			except ValueError:
+				print('Illegal move')
+				malformed = True
+				
+			if not malformed:
+				for xChar, yChar in [start,end]:
+					if not xChar.isalpha() or not yChar.isdigit():
+						print('Illegal move')
+						malformed = True
+					elif ord(xChar) < ord('a') or ord(xChar) > ord('h'):
+						print('Illegal move')
+						malformed = True
 
-			colour = self.getColour(yStart, xStart)
+			if not malformed:
+				yStart = 9-int(start[1]) #9 minus value as chess is decending while the matrix is increasing
+				xStart = (ord(start[0]) - 97)+2 #a's ascii code is 97 (+2 for indexing)
+				yEnd = 9-int(end[1])
+				xEnd = (ord(end[0]) - 97)+2
 
-			if self.ruleCheck(yStart, xStart, yEnd, xEnd):
-				target = self.board[yEnd][xEnd] #saves whatever was in square in case move is still illegal
-				self.board[yEnd][xEnd] = self.board[yStart][xStart]
-				self.board[yStart][xStart] = [' - ' if (xStart+yStart+1)%2 == 0 else ' x '][0]
-				if self.inCheck(colour):
-					self.board[yStart][xStart] = self.board[yEnd][xEnd]
-					self.board[yEnd][xEnd] = target
-					print("Move sustains/places you in check.")
+				colour = self.getColour(yStart, xStart)
+
+				if self.ruleCheck(yStart, xStart, yEnd, xEnd):
+					target = self.board[yEnd][xEnd] #saves whatever was in square in case move is still illegal
+					self.board[yEnd][xEnd] = self.board[yStart][xStart]
+					self.board[yStart][xStart] = [' - ' if (xStart+yStart+1)%2 == 0 else ' x '][0]
+					if self.inCheck(colour):
+						self.board[yStart][xStart] = self.board[yEnd][xEnd]
+						self.board[yEnd][xEnd] = target
+						print("Move sustains/places you in check.")
+					else:
+						break
 				else:
-					break
-			else:
-				print("Illegal move")
+					print("Illegal move")
 
 
 game()
