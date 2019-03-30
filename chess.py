@@ -51,6 +51,9 @@ class game():
 	def show(self):
 		print('\n',''.join(np.insert(self.board, [i*11 for i in range(1,12)], '\n')), '\n')
 
+	def getColour(self,y,x):
+		return 'black' if ord((self.board[y][x])[1:2]) <= 9817 else 'white'
+
 	def search(self, yStart, xStart, colour, direction, yEnd=None, xEnd=None): #this is either cursed or genius
 		targets = self.peices[[0 if colour == 'white' else 1][0]]
 		if direction == 'diagonal':
@@ -87,7 +90,14 @@ class game():
 		else:
 			return squareList #returns all possible movement locations for the bot
 
-	def pawnSearch(self, yStart, xStart, colour, yEnd=None, xEnd=None): #TODO: implement french thing and upgrade at end of board
+	def pawnUpgrade(self, colour, y, x):
+		selection = [i for i in self.peices[[1 if colour == 'black' else 0][0]] if i not in (' ♟ ',' ♚ ', ' ♔ ', ' ♙ ')] #filter peices that can't be upgraded to
+		names = ["rook", "knight", "bishop", "queen"]
+		peiceDict = {name:i for name, i in zip(names,selection)}
+		upgradeTo = input("Enter peice to upgrade to: Queen, Knight, Bishop, Rook ").lower()
+		self.board[y][x] = peiceDict[upgradeTo] #this gets overridden by the move function
+
+	def pawnSearch(self, yStart, xStart, colour, yEnd=None, xEnd=None): #TODO: implement french thing
 		targets = self.peices[[0 if colour == 'white' else 1][0]]
 		limit = 1
 		c = 0
@@ -97,11 +107,13 @@ class game():
 				limit <<= 1
 			increment = (-1,0)
 			take = [(-1,-1),(-1,1)]
+			upgradeRow = 1
 		if colour == 'black':
 			if yStart == 2:
 				limit <<= 1
 			increment = (1,0)
 			take = [(1,-1),(1,1)]
+			upgradeRow = 8
 		yInc = increment[0]
 		xInc = increment[1]
 		
@@ -112,6 +124,8 @@ class game():
 				y,x = (yStart+yInc, xStart+xInc)
 				
 				if (y,x) == (yEnd,xEnd):
+					if yEnd == upgradeRow:
+						self.pawnUpgrade(colour, yEnd, xEnd)
 					return True
 			return False
 		else:
@@ -121,6 +135,8 @@ class game():
 				if position in (' = ', '|') or position in self.peices[0] or position in self.peices[1]:
 					return False
 				elif (y,x) == (yEnd,xEnd):
+					if yEnd == upgradeRow:
+						self.pawnUpgrade(colour, yEnd, xEnd)
 					return True
 
 				if yInc > 0:
@@ -174,9 +190,6 @@ class game():
 
 		return False
 
-	def getColour(self,y,x):
-		return 'black' if ord((self.board[y][x])[1:2]) <= 9817 else 'white'
-
 	def ruleCheck(self, yStart, xStart, yEnd, xEnd): 
 	#TODO's:	#make sure you can't index outside the board
 		colour = self.getColour(yStart,xStart)
@@ -195,7 +208,7 @@ class game():
 		if peice in (' ♚ ', ' ♔ '):
 			return self.kingSearch(yStart, xStart, colour, yEnd, xEnd)
 
-	def move(self): 
+	def move(self): #TODO: don't let player control other sides peices lol
 		while True:
 			move = input('Enter move: ') #TODO: make sure input in constrained to grid (a-h, 1-8)
 			start, end = move.split(' ') 
