@@ -1,15 +1,24 @@
 import numpy as np 
-import collections
+import sys
+
+
+straightGrad = (0)
+diagGrad = (1,-1)
+
+def getIntercept(y,x):
+    return y - lookup((y,x))*x
+
+def checkIntercept(yStart, xStart, yEnd, xEnd):
+    return lookup((yStart,xStart))*xEnd+getIntercept(yStart,xStart) == yEnd
+
+
 
 class game():
 	def __init__(self):
-		self.checkMate = False
+		self.Mate = False
 		self.board = self.setupBoard()
-		self.playerColour = input("Whites or blacks? ") #TODO: make this actually mean something lol
+                self.playerColour = input("Whites or blacks? ") #TODO: make this actually mean something lol
 		self.peices = [[' ♖ ',' ♘ ',' ♗ ',' ♕ ',' ♔ ',' ♙ '],[' ♜ ',' ♞ ',' ♝ ',' ♛ ',' ♚ ',' ♟ ']]
-		while True:
-			self.show()
-			self.move()
 			
 	def setupBoard(self):
 		board = np.empty((11,11), dtype=object) #empty over zeros for that s p e e d
@@ -54,13 +63,12 @@ class game():
 	def getColour(self,y,x):
 		return 'black' if ord((self.board[y][x])[1:2]) <= 9817 else 'white'
 
-	def search(self, yStart, xStart, colour, direction, yEnd=None, xEnd=None): #this is either cursed or genius
+	def search(self, yStart, xStart, colour, direction, yEnd, xEnd): #this is either cursed or genius
 		targets = self.peices[[0 if colour == 'white' else 1][0]]
 		if direction == 'diagonal':
 			incrementList = [(1,1),(1,-1),(-1,1),(-1,-1)]
 		if direction == 'linear':
 			incrementList = [(-1,0),(0,-1),(1,0),(0,1)]
-		squareList = []
 
 		for yInc,xInc in incrementList: #Allows us to transverse in one direction incrementally at a time.
 			peiceFound = False
@@ -83,14 +91,9 @@ class game():
 				if yInc < 0: #is this horribly hacky I wonder? Hope not.
 					yInc-=1
 
-				squareList.append((y,x))
+		return False
 
-		if yEnd != None:
-			return False #all directions exhausted without destination found
-		else:
-			return squareList #returns all possible movement locations for the bot
-
-	def pawnSearch(self, yStart, xStart, colour, yEnd=None, xEnd=None): #TODO: implement french thing
+	def pawnSearch(self, yStart, xStart, colour, yEnd, xEnd): #TODO: implement french thing
 		targets = self.peices[[0 if colour == 'white' else 1][0]]
 		limit = 1
 		c = 0
@@ -146,7 +149,7 @@ class game():
 		self.board[y][x] = peiceDict[upgradeTo] #this gets overridden by the move function
 
 
-	def knightSearch(self, yStart, xStart, colour, yEnd=None, xEnd=None):
+	def knightSearch(self, yStart, xStart, colour, yEnd, xEnd):
 		targets = self.peices[[0 if colour == 'white' else 1][0]]
 		increment = [(-2,1),(-1,2),(-2,-1),(-1,-2),(2,1),(2,-1),(1,-2),(1,2)]
 		for i in increment:
@@ -156,7 +159,7 @@ class game():
 				if (y,x) == (yEnd,xEnd):
 					return True
 
-	def kingSearch(self, yStart, xStart, colour, yEnd=None, xEnd=None):
+	def kingSearch(self, yStart, xStart, colour, yEnd, xEnd):
 		increments = [(1,1),(-1,-1),(1,-1),(-1,1),(0,1),(1,0),(-1,0),(0,-1)]
 		allyes = self.peices[[0 if colour == 'black' else 1][0]]
 		for yInc,xInc in increments:
@@ -210,7 +213,10 @@ class game():
 	def move(self): #TODO: don't let player control other sides peices lol
 		while True:
 			malformed = False
-			move = input('Enter move: ') #TODO: make sure input in constrained to grid (a-h, 1-8)
+			move = input('Enter move: ')
+
+			if move == 'exit':
+				sys.exit()
 
 			try:
 				start, end = move.split(' ') 
@@ -249,4 +255,8 @@ class game():
 					print("Illegal move")
 
 
-game()
+if __name__ == '__main__':
+	game = game()
+	while not game.Mate:
+		game.show()
+		game.move()
