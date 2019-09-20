@@ -15,10 +15,10 @@ def checkIntercept(yStart, xStart, yEnd, xEnd):
 
 class game():
 	def __init__(self):
-		self.Mate = False
-		self.board = self.setupBoard()
-                self.playerColour = input("Whites or blacks? ") #TODO: make this actually mean something lol
-		self.peices = [[' ♖ ',' ♘ ',' ♗ ',' ♕ ',' ♔ ',' ♙ '],[' ♜ ',' ♞ ',' ♝ ',' ♛ ',' ♚ ',' ♟ ']]
+                self.Mate = False
+                self.board = self.setupBoard()
+                self.playerColour = input("Whites or blacks? ") 
+                self.peices = [[' ♖ ',' ♘ ',' ♗ ',' ♕ ',' ♔ ',' ♙ '],[' ♜ ',' ♞ ',' ♝ ',' ♛ ',' ♚ ',' ♟ ']]
 			
 	def setupBoard(self):
 		board = np.empty((11,11), dtype=object) #empty over zeros for that s p e e d
@@ -63,7 +63,7 @@ class game():
 	def getColour(self,y,x):
 		return 'black' if ord((self.board[y][x])[1:2]) <= 9817 else 'white'
 
-	def search(self, yStart, xStart, colour, direction, yEnd, xEnd): #this is either cursed or genius
+	def search(self, yStart, xStart, colour, direction, yEnd, xEnd): 
 		targets = self.peices[[0 if colour == 'white' else 1][0]]
 		if direction == 'diagonal':
 			incrementList = [(1,1),(1,-1),(-1,1),(-1,-1)]
@@ -72,7 +72,7 @@ class game():
 
 		for yInc,xInc in incrementList: #Allows us to transverse in one direction incrementally at a time.
 			peiceFound = False
-			while not peiceFound: #TODO: consider corner cases of board characters
+			while not peiceFound: 
 				y,x = (yStart+yInc,xStart+xInc)
 				position = self.board[y][x]
 				if position in (' = ', '|') or position in self.peices[0] or position in self.peices[1]: #check if direction has found any other peice or board edge
@@ -88,7 +88,7 @@ class game():
 					yInc+=1
 				if xInc < 0:
 					xInc-=1
-				if yInc < 0: #is this horribly hacky I wonder? Hope not.
+				if yInc < 0: 
 					yInc-=1
 
 		return False
@@ -188,7 +188,7 @@ class game():
 		for y in range(1,9):
 			for x in range(2,10):
 				if self.board[y][x] in targets:
-					if self.ruleCheck(y, x, self.kingPos[0], self.kingPos[1]) == True: #this is unintentionally the most genius thing I've ever done
+					if self.ruleCheck(y, x, self.kingPos[0], self.kingPos[1]) == True: 
 						return True
 
 		return False
@@ -210,7 +210,7 @@ class game():
 		if peice in (' ♚ ', ' ♔ '):
 			return self.kingSearch(yStart, xStart, colour, yEnd, xEnd)
 
-	def move(self): #TODO: don't let player control other sides peices lol
+	def move(self): 
 		while True:
 			malformed = False
 			move = input('Enter move: ')
