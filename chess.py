@@ -39,8 +39,7 @@ class game():
 
 		#arranging peice list in order it's layed out just for this loop
 		peices = [[' ♖ ',' ♘ ',' ♗ ',' ♕ ',' ♔ ',' ♗ ',' ♘ ',' ♖ '],[' ♜ ',' ♞ ',' ♝ ',' ♛ ',' ♚ ',' ♝ ',' ♞ ',' ♜ ']]
-		for c,y in enumerate([1,-3]):
-			for x in range(2,10):
+		for c,y in enumerate([1,-3]): for x in range(2,10):
 				board[y][x] = peices[c][x-2]
 				
 		board[2][[i for i in range(2,10)]] = ' ♙ '
@@ -64,49 +63,88 @@ class game():
 		return 'black' if ord((self.board[y][x])[1:2]) <= 9817 else 'white'
 
 	def search(self, yStart, xStart, colour, direction, yEnd, xEnd): 
-		targets = self.peices[[0 if colour == 'white' else 1][0]]
+		targets = self.peices[0 if colour == 'white' else 1]
+                allies = self.peices[1 if colour == 'white' else 0]
 		if direction == 'diagonal':
 			incrementList = [(1,1),(1,-1),(-1,1),(-1,-1)]
 		if direction == 'linear':
 			incrementList = [(-1,0),(0,-1),(1,0),(0,1)]
 
-		for yInc,xInc in incrementList: #Allows us to transverse in one direction incrementally at a time.
+		for yDir,xDir in incrementList: #Allows us to transverse in one direction incrementally at a time.
+            xInc = xDir/-xDir if xDir != 0 else 0 #concise way to keep incrementing in the correct direction, and 0 at 0
+            yInc = yDir/-yDir if yDir != 0 else 0
 			peiceFound = False
-			while not peiceFound: 
-				y,x = (yStart+yInc,xStart+xInc)
-				position = self.board[y][x]
-				if position in (' = ', '|') or position in self.peices[0] or position in self.peices[1]: #check if direction has found any other peice or board edge
-					if (y,x) == (yEnd,xEnd) and position in targets:
-						return True	
-					peiceFound = True
-				elif (y,x) == (yEnd,xEnd):
-					return True	#works for taking too as function goes upto and including first peice
 
-				if xInc > 0:  #Keeps 0's at 0 and -1 deincrementing
-					xInc+=1
-				if yInc > 0:
-					yInc+=1
-				if xInc < 0:
-					xInc-=1
-				if yInc < 0: 
-					yInc-=1
+			while True:
+				y,x = (yStart+yDir,xStart+xDir)
+				position = self.board[y][x]
+				if position in (' = ', '|') or position in allies: 
+				    break
+                if position in targets and (y,x) != (yEnd,xEnd):
+                    break
+				elif (y,x) == (yEnd,xEnd):
+				    return True	
+
+                    yDir+=yInc
+                    xDir+=xInc
 
 		return False
 
-	def pawnSearch(self, yStart, xStart, colour, yEnd, xEnd): #TODO: implement french thing
+        def checkSearch(self):
+            yStart = self.kingPos[0]
+            xStart = self.kingPos[1]
+            colour = self.getColour(yStart, xStart)
+            targets = self.peices[0 if colour == 'white' else 1]
+            allies = self.peices[1 if colour == 'white' else 0]
+            incrementList = [(1,1),(1,-1),(-1,1),(-1,-1),(-1,0),(0,-1),(1,0),(0,1)]
+            inSight = []
+            inSightOneRemoved = []
+            blocking = []
+
+            for yDir, xDir in incrementList:
+                yInc = yDir/-yDir if yDir != 0 else 0
+                xInc = xDir/-xDir if xDir != 0 else 0
+                peiceFound = 0
+
+                while True:
+                    y,x = (yStart+yDir,xStart+xInc)
+                    position = self.board[y][x]
+                    if position in (' = ', '|'):
+                        break
+                    if position in targets:
+                        if peiceFound == 1:
+                            inSightOneRemoved.append((y,x))
+                            break
+                        elif peiceFound == 0:
+                            inSight.append((y,x))
+                            break
+                    if position in allies:
+                        if peiceFound == 1:
+                            break
+                        peiceFound = 1 
+                    yDir+=yInc
+                    xDir+=xInc
+                
+            return inSight,inSightOneRemoved
+
+
+
+
+
+	def pawnSearch(self, yStart, xStart, colour, yEnd, xEnd): #TODO: implement en passant
 		targets = self.peices[[0 if colour == 'white' else 1][0]]
 		limit = 1
 		c = 0
 		peiceFound = False
 		if colour == 'white':
 			if yStart == 7:
-				limit <<= 1
+				limit = 2
 			increment = (-1,0)
 			take = [(-1,-1),(-1,1)]
 			upgradeRow = 1
 		if colour == 'black':
 			if yStart == 2:
-				limit <<= 1
+				limit = 2
 			increment = (1,0)
 			take = [(1,-1),(1,1)]
 			upgradeRow = 8
@@ -170,7 +208,6 @@ class game():
 					return True
 		return False
 
-	#TODO: make more efficeint by only calculating peices in king's line of sight, not all peices
 	def inCheck(self, colour):
 		targets = self.peices[[0 if colour == 'white' else 1][0]]
 		breaking = False
@@ -179,19 +216,23 @@ class game():
 		for y in range(1,9): #start by finding the king
 			for x in range(2,10):
 				if self.board[y][x] == king:
-					self.kingPos = (y,x)
+					kingPos = (y,x)
 					breaking = True
 					break
-			if breaking == True: #god I wish python let you break out of nested loops easier
+			if breaking == True: #wishing python had goto's
 				break
 
 		for y in range(1,9):
 			for x in range(2,10):
 				if self.board[y][x] in targets:
-					if self.ruleCheck(y, x, self.kingPos[0], self.kingPos[1]) == True: 
+					if self.ruleCheck(y, x, kingPos[0], kingPos[1]) == True: #can peice at x,y get to the king? 
 						return True
 
 		return False
+
+        def inMate(self, targets, kingPos):
+    #iterate over all targets and collect which have a singually obstructed line of sight to king. Test obstructions.     
+    
 
 	def ruleCheck(self, yStart, xStart, yEnd, xEnd): 
 		colour = self.getColour(yStart,xStart)
@@ -211,48 +252,42 @@ class game():
 			return self.kingSearch(yStart, xStart, colour, yEnd, xEnd)
 
 	def move(self): 
-		while True:
-			malformed = False
-			move = input('Enter move: ')
+		move = input('Enter move: ')
 
-			if move == 'exit':
-				sys.exit()
+		if move == 'exit':
+			sys.exit()
 
-			try:
-				start, end = move.split(' ') 
-			except ValueError:
+		try:
+			start, end = move.split(' ') 
+		except ValueError:
+			print('Illegal move')
+		    return
+
+		for xChar, yChar in [start,end]:
+			if not xChar.isalpha() or not yChar.isdigit():
 				print('Illegal move')
-				malformed = True
-				
-			if not malformed:
-				for xChar, yChar in [start,end]:
-					if not xChar.isalpha() or not yChar.isdigit():
-						print('Illegal move')
-						malformed = True
-					elif ord(xChar) < ord('a') or ord(xChar) > ord('h'):
-						print('Illegal move')
-						malformed = True
+				return
+			elif ord(xChar) < ord('a') or ord(xChar) > ord('h'):
+				print('Illegal move')
+			    return
 
-			if not malformed:
-				yStart = 9-int(start[1]) #9 minus value as chess is decending while the matrix is increasing
-				xStart = (ord(start[0]) - 97)+2 #a's ascii code is 97 (+2 for indexing)
-				yEnd = 9-int(end[1])
-				xEnd = (ord(end[0]) - 97)+2
+		yStart = 9-int(start[1]) #-9 as chess is decending while the matrix is increasing
+		xStart = (ord(start[0]) - ord('a'))+2 #+2 to account for cosmetic offsets 
+		yEnd = 9-int(end[1])
+		xEnd = (ord(end[0]) - ord('a'))+2
 
-				colour = self.getColour(yStart, xStart)
+		colour = self.getColour(yStart, xStart)
 
-				if self.ruleCheck(yStart, xStart, yEnd, xEnd):
-					target = self.board[yEnd][xEnd] #saves whatever was in square in case move is still illegal
-					self.board[yEnd][xEnd] = self.board[yStart][xStart]
-					self.board[yStart][xStart] = [' - ' if (xStart+yStart+1)%2 == 0 else ' x '][0]
-					if self.inCheck(colour):
-						self.board[yStart][xStart] = self.board[yEnd][xEnd]
-						self.board[yEnd][xEnd] = target
-						print("Move sustains/places you in check.")
-					else:
-						break
-				else:
-					print("Illegal move")
+		if self.ruleCheck(yStart, xStart, yEnd, xEnd):
+			target = self.board[yEnd][xEnd] #saves whatever was in square in case move is still illegal
+			self.board[yEnd][xEnd] = self.board[yStart][xStart]
+			self.board[yStart][xStart] = [' - ' if (xStart+yStart+1)%2 == 0 else ' x '][0]
+			if self.inCheck(colour):
+				self.board[yStart][xStart] = self.board[yEnd][xEnd]
+				self.board[yEnd][xEnd] = target
+				print("Move sustains/places you in check.")
+		else:
+			print("Illegal move")
 
 
 if __name__ == '__main__':
