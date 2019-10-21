@@ -5,4 +5,5 @@ Currently the engine is fully implemented, so now an interface needs to be made 
 Below are examples of movements being made as well as illegal moves attempted. As the engine is implemented, it would be possible to play a full game of chess with another person if you both shared the same keyboard.
 
 
-![example](https://i.imgur.com/a/sz7qOHU)
+
+![image](https://user-images.githubusercontent.com/39006618/67169779-82bba600-f3a5-11e9-9500-1d2f6461fb23.png)
